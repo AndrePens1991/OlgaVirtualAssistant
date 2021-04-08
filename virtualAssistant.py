@@ -24,10 +24,10 @@ import warnings
 import calendar
 import random
 import wikipedia 
+import requests, json  # These are needed to call the API to get the weather for today
 
 # Ignore every warning message to not be uselessly bothered by warnings while debugging
 warnings.filterwarnings("ignore")
-
 
 ################################################### Function Section ########################################################################
 
@@ -114,6 +114,83 @@ def getPerson(text):
         if i+3 <= len(wordList) -1 and wordList[i].lower() == "who" and wordList[i+1].lower() == "is":
             return wordList[i+2] +' '+ wordList[i+3]  #here I should increase the checks in this way I just work if I have name and surname
 
+# get_joke(): Function that allows Olga to tell us a joke
+def get_joke():
+    JOKE = ["A woman gets on a bus with her baby. The driver says Ugh that’s the ugliest baby I’ve ever seen! The woman walks to the back of the bus and sits down. She says to the man next to her: The driver just insulted me! The man says: You go up there and tell him off. Go on. I’ll hold your monkey for you.","I had a dream where an evil queen forced me to eat a gigantic marshmallow. When I woke up, my pillow was gone.","What makes fat male penguins such a hit with penguin females? They sure know how to break the ice.","A wife is like a hand granade. Take off the ring and say good bye to your house.","A man walks into a bar. Ouch.","What did the fish say when he swam into a wall? Dam.","Did you hear about the Italian chef who died? He pasta-way","What happens when a frog's car breaks down? It gets toad!","What's the dumbest animal in the jungle? A polar bear!","I watched hockey before it was cool. They were basically swimming."]
+
+    return random.choice(JOKE)
+
+# get_forecast(text): Function that takes the city we are passing as input and gives us the forecastweather in this moment on the requested location
+def get_forecast(text):
+    wordList = text.split()
+    # Connection data to obtain the .json with the weather informations
+    BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
+    CITY = wordList[-1]
+    API_KEY = "2cf89bca882c400f8e2e94cdca443181"
+
+    #I create the URL and I send the request
+    URL = BASE_URL + "q=" + CITY + "&appid=" + API_KEY
+    response = requests.get(URL)
+
+    if response.status_code == 200:
+        # getting data in the json format
+        data = response.json()
+        # getting the main dict block
+        main = data['main']
+        # getting temperature, it will be given in Kelvin, so to change it to Celsius I have to do temperature-273.15
+        temperature = main['temp']
+        celsius_temperature = temperature - 273.15
+        # getting the humidity
+        humidity = main['humidity']
+        # weather report
+        report = data['weather']
+    
+        return "Now in "+CITY+" the weather is "+report[0]['description']+". The temperature is around "+str(int(celsius_temperature))+" degrees and the humidity is of the "+str(humidity)+"%."
+    
+    else:
+        return "Error in the HTTP request to the website"
+    
+# getNews(): Function that gives out the most important 10 news from the world according to BBC
+def get_News():
+    # BBC news api
+    # following query parameters are used
+    # source, sortBy and apiKey
+    query_params = {
+      "source": "bbc-news",
+      "sortBy": "top",
+      "apiKey": "9eef0c9ab54345df806b76319545d94a"
+    }
+    main_url = " https://newsapi.org/v1/articles"
+ 
+    
+    # fetching data in json format
+    res = requests.get(main_url, params=query_params)
+    open_bbc_page = res.json()
+ 
+    # getting all articles in a string article
+    article = open_bbc_page["articles"]
+ 
+    # empty list which will
+    # contain all trending news
+    results = []
+     
+    for ar in article:
+        results.append(ar["title"])
+         
+    for i in range(len(results)):
+         
+        # printing all trending news
+        print(i + 1, results[i])
+    
+    news = "Today's most important news are: "
+    
+    for i in results:
+        news = news +". "+i
+       
+    return news
+
+
+
 
 ####################################################### Main Section ########################################################################
 
@@ -156,10 +233,40 @@ while True:
             response = response +' '+wiki
 
         #Now I check if the user is telling something about Alexa and Olga is insulting
-        if("alexa" in text):
-            response = response +"Who is Alexa? Is she another of your bitches?"
+        if("Alexa" in text):
+            response = response +"who is alexa? Is she another of your bitches?"
 
-        
+        if("how are you" in text):
+            li = ['not too good', 'fine', 'great','can be better', 'awesome','I am feeling perfect']
+            answer = random.choice(li)
+            response = response+ " "+answer
+
+        if("who are you" in text):
+            response = response +"i am Olga, your personal slave. I can do everything you desire from me. Well, not everything, I'm not a physical person."
+
+        if("joke" in text):
+            response = response+get_joke()
+
+        if("burp" in text):
+            sorry = "prosit!"
+            os.system("burp.mp3")
+            response = response+sorry
+
+        if("fart" in text):
+            sorry = "ooops, better out than in, right?"
+            os.system("fart.mp3")
+            response = response+sorry
+
+        if("weather" in text):
+            forecast = get_forecast(text)
+            response = response+forecast
+
+        if("news" in text):
+            top_news = get_News()
+            response = response+top_news
+            
+        #New fields
+
         
         #Now I make the assistant to respond back to me using audio and the text from response
         assistantResponse(response)
