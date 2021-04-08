@@ -126,7 +126,7 @@ def get_forecast(text):
     # Connection data to obtain the .json with the weather informations
     BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
     CITY = wordList[-1]
-    API_KEY = "2cf89bca882c400f8e2e94cdca443181"
+    API_KEY = "**********"
 
     #I create the URL and I send the request
     URL = BASE_URL + "q=" + CITY + "&appid=" + API_KEY
@@ -158,7 +158,7 @@ def get_News():
     query_params = {
       "source": "bbc-news",
       "sortBy": "top",
-      "apiKey": "9eef0c9ab54345df806b76319545d94a"
+      "apiKey": "***********"
     }
     main_url = " https://newsapi.org/v1/articles"
  
